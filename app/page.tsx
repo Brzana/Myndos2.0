@@ -1,7 +1,3 @@
-export default function Home() {
-  return (
-    <div className="text-3xl font-bold underline text-text-muted bg-background">
-      Hello World
-    </div>
-  );
+export default async function Home() {
+  return <h1>Welcome to Myndos!</h1>;
 }
