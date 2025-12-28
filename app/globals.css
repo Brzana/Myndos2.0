@@ -1,11 +1,53 @@
 @import "tailwindcss";
 
 :root {
+  /* Base */
+  --bg: hsl(67, 50%, 90%);
+  --surface: hsl(67, 50%, 85%);
+
+  /* Text */
+  --text: hsl(67, 50%, 10%);
+  --text-muted: hsl(67, 30%, 35%);
+
+  /* Brand */
+  --primary: hsl(127, 80%, 20%);
+  --primary-hover: hsl(127, 80%, 16%);
+  --secondary: hsl(67, 50%, 10%);
+  --accent: hsl(7, 80%, 20%);
+
+  /* UI */
+  --border: hsl(67, 30%, 30%);
+  --button: var(--primary);
+  --button-hover: var(--primary-hover);
+  --button-text: hsl(67, 50%, 95%);
+
+  /* Legacy */
   --background: #ffffff;
   --foreground: #171717;
 }
 
 @theme inline {
+  /* Base colors */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+
+  /* Text colors */
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+
+  /* Brand colors */
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+
+  /* UI colors */
+  --color-border: var(--border);
+  --color-button: var(--button);
+  --color-button-hover: var(--button-hover);
+  --color-button-text: var(--button-text);
+
+  /* Legacy */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
