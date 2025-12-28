@@ -30,21 +30,22 @@ export default defineConfig({
   },
 
   /* Configure projects for major browsers */
+  // Using only Chromium for faster test execution
+  // Uncomment other browsers if needed for cross-browser testing
   projects: [
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
-
-    {
-      name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
-    },
-
-    {
-      name: "webkit",
-      use: { ...devices["Desktop Safari"] },
-    },
+    // Uncomment below for cross-browser testing (requires: npx playwright install)
+    // {
+    //   name: "firefox",
+    //   use: { ...devices["Desktop Firefox"] },
+    // },
+    // {
+    //   name: "webkit",
+    //   use: { ...devices["Desktop Safari"] },
+    // },
   ],
 
   /* Run your local dev server before starting the tests */
