@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { MindMap, type UserScores } from "@/components/MindMap";
+import { type UserScores } from "@/components/MindMap";
+import { DashboardClient } from "@/components/DashboardClient";
 
 // Mockowe dane wyników użytkownika (w przyszłości pobierane z bazy)
 const mockUserScores: UserScores = {
@@ -54,10 +55,8 @@ export default async function Dashboard() {
         </div>
       </div>
 
-      {/* Mapa myśli */}
-      <div className="h-[calc(100vh-200px)] min-h-[500px]">
-        <MindMap userScores={mockUserScores} />
-      </div>
+      {/* Mapa myśli z modalem */}
+      <DashboardClient userScores={mockUserScores} />
     </div>
   );
 }
