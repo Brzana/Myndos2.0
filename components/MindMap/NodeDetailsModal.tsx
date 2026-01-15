@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { MindMapNodeData } from "@/lib/mindmap/data";
 import { getNodeColor, getScoreLabel } from "@/lib/mindmap/utils";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 interface NodeDetailsModalProps {
   isOpen: boolean;
@@ -19,6 +20,11 @@ export function NodeDetailsModal({
   nodeData,
   score,
 }: NodeDetailsModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Trap focus within the modal
+  useFocusTrap(modalRef, isOpen);
+
   // Zamknięcie modalu klawiszem Escape
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -60,7 +66,10 @@ export function NodeDetailsModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-3xl max-h-[90vh] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+      <div
+        ref={modalRef}
+        className="relative w-full max-w-3xl max-h-[90vh] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+      >
         {/* Header */}
         <div
           className="px-6 py-4 border-b border-slate-700 flex items-start justify-between gap-4"
