@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Myndos – AI-Powered Learning Platform with Interactive Mind Maps
+
+## Overview
+
+**Myndos** is a web application designed to help students learn more effectively by visualizing knowledge through interactive mind maps and verifying their progress with AI-generated exams. The application combines a visual learning experience with AI-powered testing to create a feedback loop: **Learn → Test → Track Progress → Improve**.
+
+The MVP (Minimum Viable Product) focuses on delivering a predefined mathematical logic curriculum with an adaptive, color-coded progress tracking system that adjusts based on exam performance.
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18+ and npm/yarn/pnpm/bun
+- Supabase project (for database and authentication)
+- OpenAI API key (for exam generation)
 
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+git clone <repository-url>
+cd myndos
+```
+
+2. Install dependencies:
+```bash
+bun install
+```
+
+3. Create a `.env.local` file with:
+```env
+NEXT_PUBLIC_SUPABASE_URL=<your-supabase-url>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-supabase-anon-key>
+OPENAI_API_KEY=<your-openai-api-key>
+```
+
+4. Run the development server:
+```bash
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Status**: MVP in active development  
+**Current Focus**: Implementing core learning and testing features with mathematical logic curriculum
