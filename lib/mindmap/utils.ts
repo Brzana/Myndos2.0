@@ -1,3 +1,62 @@
+import type { Node } from "reactflow";
+import type { MindMapNodeData } from "./data";
+
+/** Kategorie węzłów dla trybów egzaminu (Funkcja 4, requirements.md). */
+export type ScoreCategory =
+  | "nieodkryty" // Szary, null – tryb „Poznawanie”
+  | "slabe_obszary" // Czerwony, 0–39 – tryb „Słabe obszary”
+  | "w_trakcie" // Żółty, 40–79
+  | "opanowany" // Zielony, 80–100
+  | "pelny_material"; // Wszystkie węzły – tryb „Pełny materiał”
+
+/**
+ * Aktualizuje wynik węzła w tablicy nodes (immutable).
+ * Score jest clampowany w [0, 100]. null = nieodkryty.
+ */
+export function updateNodeScore(
+  nodes: Node<MindMapNodeData>[],
+  nodeId: string,
+  newScore: number | null
+): Node<MindMapNodeData>[] {
+  const clamped =
+    newScore === null ? null : Math.max(0, Math.min(100, newScore));
+  return nodes.map((node) =>
+    node.id === nodeId
+      ? { ...node, data: { ...node.data, score: clamped } }
+      : node
+  );
+}
+
+/**
+ * Zwraca ID węzłów spełniających daną kategorię (do generowania egzaminów).
+ * Zgodne z trybami z requirements.md: Poznawanie, Słabe obszary, Pełny materiał.
+ */
+export function getNodesByScoreCategory(
+  nodes: Node<MindMapNodeData>[],
+  category: ScoreCategory
+): string[] {
+  if (category === "pelny_material") {
+    return nodes.map((n) => n.id);
+  }
+  return nodes
+    .filter((node) => {
+      const s = node.data?.score ?? null;
+      switch (category) {
+        case "nieodkryty":
+          return s === null;
+        case "slabe_obszary":
+          return s !== null && s < 40;
+        case "w_trakcie":
+          return s !== null && s >= 40 && s < 80;
+        case "opanowany":
+          return s !== null && s >= 80;
+        default:
+          return false;
+      }
+    })
+    .map((n) => n.id);
+}
+
 /**
  * Zwraca kolor węzła na podstawie wyniku (score).
  *

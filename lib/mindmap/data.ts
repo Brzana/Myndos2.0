@@ -6,6 +6,8 @@ export interface MindMapNodeData {
   description?: string;
   article?: string; // Treść edukacyjna w formacie Markdown
   exampleQuestions?: string[]; // Przykładowe pytania do węzła
+  /** Wynik użytkownika 0–100 lub null (nieodkryty). */
+  score?: number | null;
 }
 
 // Helper function to calculate radial position
@@ -36,7 +38,7 @@ const firstLevelAngles = {
   logika_predykatow: -Math.PI / 12, // right
 };
 
-export const initialNodes: Node<MindMapNodeData>[] = [
+const baseNodes: Node<MindMapNodeData>[] = [
   // ============ CENTER NODE ============
   {
     id: "logika_matematyczna",
@@ -1517,8 +1519,45 @@ export const initialEdges: Edge[] = [
   },
 ];
 
+/** Wyniki użytkownika per węzeł (w przyszłości z bazy). Wbudowane w initialNodes. */
+const NODE_SCORES: Record<string, number | null> = {
+  logika_matematyczna: 88,
+  logika_rozmyta: 72,
+  logika_nazw: 55,
+  algebry_logiczne: 91,
+  reguły_wnioskowania: 38,
+  podstawy_logiki_klasycznej: 65,
+  logika_predykatow: 42,
+  zbiory_i_zdania_rozmyte: 78,
+  operacje_logiczne_rozmyte: 28,
+  pojecie_nieostrosci: null,
+  typologia_nazw: null,
+  operacje_na_nazwach: 15,
+  zakres_i_znaczenie: null,
+  zmienne_i_funkcje_logiczne: 82,
+  algebra_boolea: 94,
+  własnosci_algebr_logicznych: null,
+  reguły_inferencyjne: 61,
+  schematy_wnioskowan: null,
+  logika_zdan_jako_system_aksjomatyczny: 47,
+  operacje_logiczne_na_zdaniach: 70,
+  podstawy_i_formalizacja_zdan: 53,
+  tautologie_i_rownowaznosc: null,
+  system_formalny_logiki_predykatow: 35,
+  definicje_i_rodzaje: null,
+  kwantyfikatory_i_kwadrat_logiczny: 59,
+};
+
+export const initialNodes: Node<MindMapNodeData>[] = baseNodes.map((node) => ({
+  ...node,
+  data: { ...node.data, score: NODE_SCORES[node.id] ?? null },
+}));
+
 // Lista wszystkich ID węzłów (przydatne do inicjalizacji wyników)
 export const nodeIds = initialNodes.map((node) => node.id);
+
+/** Typ wyników użytkownika: nodeId → score 0–100 lub null (nieodkryty). Używany przy API / utils. */
+export type UserScores = Record<string, number | null>;
 
 // Funkcja pomocnicza do pobierania danych węzła po ID
 export function getNodeById(id: string): Node<MindMapNodeData> | undefined {

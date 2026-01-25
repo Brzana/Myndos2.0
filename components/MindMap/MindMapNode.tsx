@@ -5,11 +5,7 @@ import { Handle, Position, type NodeProps } from "reactflow";
 import type { MindMapNodeData } from "@/lib/mindmap/data";
 import { getNodeColor, getScoreLabel } from "@/lib/mindmap/utils";
 
-export interface MindMapNodeProps extends NodeProps<MindMapNodeData> {
-  data: MindMapNodeData & {
-    score?: number | null;
-  };
-}
+export type MindMapNodeProps = NodeProps<MindMapNodeData>;
 
 function MindMapNodeComponent({ data, selected }: MindMapNodeProps) {
   const score = data.score ?? null;

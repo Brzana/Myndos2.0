@@ -2,7 +2,7 @@
 
 //TODO: refactor it so it works with the data that ill provide (like it is used in knowledgemaps.ua)
 
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -24,11 +24,7 @@ import {
 import { getNodeColor } from "@/lib/mindmap/utils";
 import { MindMapNode } from "./MindMapNode";
 
-// Typy wyników użytkownika
-export type UserScores = Record<string, number | null>;
-
 interface MindMapProps {
-  userScores?: UserScores;
   onNodeClick?: (nodeId: string) => void;
 }
 
@@ -37,19 +33,8 @@ const nodeTypes: NodeTypes = {
   mindMapNode: MindMapNode,
 };
 
-export function MindMap({ userScores = {}, onNodeClick }: MindMapProps) {
-  // Przygotowanie węzłów z wynikami użytkownika
-  const nodesWithScores = useMemo(() => {
-    return initialNodes.map((node) => ({
-      ...node,
-      data: {
-        ...node.data,
-        score: userScores[node.id] ?? null,
-      },
-    }));
-  }, [userScores]);
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(nodesWithScores);
+export function MindMap({ onNodeClick }: MindMapProps) {
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   // Handler kliknięcia w węzeł
@@ -64,7 +49,7 @@ export function MindMap({ userScores = {}, onNodeClick }: MindMapProps) {
 
   // Funkcja do kolorowania minimapy
   const getMinimapNodeColor = useCallback(
-    (node: Node<MindMapNodeData & { score?: number | null }>) => {
+    (node: Node<MindMapNodeData>) => {
       const score = node.data?.score ?? null;
       return getNodeColor(score).background;
     },

@@ -1,19 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { type UserScores } from "@/components/MindMap";
 import { DashboardClient } from "@/components/DashboardClient";
-
-// Mockowe dane wyników użytkownika (w przyszłości pobierane z bazy)
-const mockUserScores: UserScores = {
-  cell: 85, // Zielony - opanowany
-  nucleus: 62, // Żółty - w trakcie nauki
-  mitochondrium: 45, // Żółty - w trakcie nauki
-  ribosome: 28, // Czerwony - do poprawy
-  er: null, // Szary - nieodkryty
-  golgi: null, // Szary - nieodkryty
-  respiration: 91, // Zielony - opanowany
-  division: 15, // Czerwony - do poprawy
-};
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -56,7 +43,7 @@ export default async function Dashboard() {
       </div>
 
       {/* Mapa myśli z modalem */}
-      <DashboardClient userScores={mockUserScores} />
+      <DashboardClient />
     </div>
   );
 }
