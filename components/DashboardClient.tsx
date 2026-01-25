@@ -2,10 +2,15 @@
 
 import { useState, useCallback } from "react";
 import { MindMap, NodeDetailsModal } from "@/components/MindMap";
+import { ExamConfig } from "@/components/ExamConfig";
 import { getNodeById, type MindMapNodeData } from "@/lib/mindmap/data";
+import { generateExam } from "@/actions/exam";
+import type { ExamMode } from "@/lib/exam";
 
 export function DashboardClient() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [isGeneratingExam, setIsGeneratingExam] = useState(false);
+  const [examError, setExamError] = useState<string | null>(null);
 
   const handleNodeClick = useCallback((nodeId: string) => {
     setSelectedNodeId(nodeId);
@@ -15,6 +20,36 @@ export function DashboardClient() {
     setSelectedNodeId(null);
   }, []);
 
+  const handleStartExam = useCallback(async (mode: ExamMode) => {
+    setIsGeneratingExam(true);
+    setExamError(null);
+
+    try {
+      const result = await generateExam(mode);
+
+      if (!result.success) {
+        setExamError(result.error);
+        return;
+      }
+
+      // TODO: Przekierowanie do widoku egzaminu (Funkcja 5)
+      console.log("Wygenerowany egzamin:", result.exam);
+      // Na razie tylko logujemy - w kolejnych krokach dodamy widok egzaminu
+      alert(
+        `Egzamin wygenerowany pomyślnie! (${result.exam.questions.length} pytań)`
+      );
+    } catch (error) {
+      console.error("Błąd podczas generowania egzaminu:", error);
+      setExamError(
+        error instanceof Error
+          ? error.message
+          : "Wystąpił nieoczekiwany błąd."
+      );
+    } finally {
+      setIsGeneratingExam(false);
+    }
+  }, []);
+
   // Pobierz dane wybranego węzła (score w data węzła)
   const selectedNode = selectedNodeId ? getNodeById(selectedNodeId) : null;
   const selectedNodeData: MindMapNodeData | null = selectedNode?.data ?? null;
@@ -22,9 +57,26 @@ export function DashboardClient() {
 
   return (
     <>
-      {/* Mapa myśli */}
-      <div className="h-[calc(100vh-200px)] min-h-[500px]">
-        <MindMap onNodeClick={handleNodeClick} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Mapa myśli - zajmuje 2/3 szerokości na większych ekranach */}
+        <div className="lg:col-span-2">
+          <div className="h-[calc(100vh-200px)] min-h-[500px]">
+            <MindMap onNodeClick={handleNodeClick} />
+          </div>
+        </div>
+
+        {/* Panel konfiguracji egzaminu - 1/3 szerokości */}
+        <div className="lg:col-span-1">
+          <ExamConfig
+            onStartExam={handleStartExam}
+            isLoading={isGeneratingExam}
+          />
+          {examError && (
+            <div className="mt-4 p-4 bg-red-900/50 border border-red-700 rounded-lg text-red-200 text-sm">
+              <strong>Błąd:</strong> {examError}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modal szczegółów węzła */}
