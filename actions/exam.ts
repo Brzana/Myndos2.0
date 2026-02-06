@@ -136,9 +136,23 @@ export async function generateExam(
       };
     }
 
-    // 10. Dodaj informacje o trybie i węzłach
+    // 10. Przypisz nodeId do pytań (round-robin distribution)
+    // Rozdzielamy pytania równomiernie między węzły użyte w egzaminie
+    const questionsWithNodeIds = validationResult.data.questions.map(
+      (question, index) => {
+        // Round-robin: przypisujemy nodeId cyklicznie
+        const nodeIndex = index % selectedIds.length;
+        return {
+          ...question,
+          nodeId: selectedIds[nodeIndex],
+        };
+      }
+    );
+
+    // 11. Dodaj informacje o trybie i węzłach
     const exam: ExamType = {
       ...validationResult.data,
+      questions: questionsWithNodeIds,
       mode,
       nodeIds: selectedIds,
     };

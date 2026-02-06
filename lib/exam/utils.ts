@@ -35,3 +35,28 @@ export const EXAM_MODE_DESCRIPTIONS: Record<ExamMode, string> = {
   slabe_obszary: "Priorytet dla węzłów z niskim wynikiem (czerwonych)",
   pelny_material: "Losowe węzły z całej mapy",
 };
+
+/**
+ * Oblicza nowy wynik węzła na podstawie odpowiedzi w egzaminie.
+ * Zgodne z requirements.md (Funkcja 5):
+ * - Poprawna odpowiedź: +20 pkt
+ * - Błędna odpowiedź: -10 pkt
+ * - Wynik jest clampowany w przedziale [0, 100]
+ *
+ * @param currentScore - Aktualny wynik węzła (null = nieodkryty, traktowany jako 0)
+ * @param isCorrect - Czy odpowiedź była poprawna
+ * @returns Nowy wynik węzła (0-100) lub null jeśli nieodkryty i błędna odpowiedź (pozostaje nieodkryty)
+ */
+export function calculateNodeScore(
+  currentScore: number | null,
+  isCorrect: boolean
+): number {
+  // Jeśli węzeł nieodkryty (null) i błędna odpowiedź, pozostaje nieodkryty (0)
+  // Jeśli nieodkryty i poprawna odpowiedź, zaczynamy od 0 + 20 = 20
+  const baseScore = currentScore ?? 0;
+
+  const newScore = isCorrect ? baseScore + 20 : baseScore - 10;
+
+  // Clamp do zakresu [0, 100]
+  return Math.max(0, Math.min(100, newScore));
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { MindMap, NodeDetailsModal } from "@/components/MindMap";
 import { ExamConfig } from "@/components/ExamConfig";
 import { getNodeById, type MindMapNodeData } from "@/lib/mindmap/data";
@@ -8,6 +9,7 @@ import { generateExam } from "@/actions/exam";
 import type { ExamMode } from "@/lib/exam";
 
 export function DashboardClient() {
+  const router = useRouter();
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isGeneratingExam, setIsGeneratingExam] = useState(false);
   const [examError, setExamError] = useState<string | null>(null);
@@ -32,12 +34,9 @@ export function DashboardClient() {
         return;
       }
 
-      // TODO: Przekierowanie do widoku egzaminu (Funkcja 5)
-      console.log("Wygenerowany egzamin:", result.exam);
-      // Na razie tylko logujemy - w kolejnych krokach dodamy widok egzaminu
-      alert(
-        `Egzamin wygenerowany pomyślnie! (${result.exam.questions.length} pytań)`
-      );
+      // Zapisz egzamin do localStorage i przekieruj do widoku egzaminu
+      localStorage.setItem("current_exam", JSON.stringify(result.exam));
+      router.push("/exam");
     } catch (error) {
       console.error("Błąd podczas generowania egzaminu:", error);
       setExamError(
@@ -48,7 +47,7 @@ export function DashboardClient() {
     } finally {
       setIsGeneratingExam(false);
     }
-  }, []);
+  }, [router]);
 
   // Pobierz dane wybranego węzła (score w data węzła)
   const selectedNode = selectedNodeId ? getNodeById(selectedNodeId) : null;
