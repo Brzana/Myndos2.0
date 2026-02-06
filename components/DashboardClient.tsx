@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MindMap, NodeDetailsModal } from "@/components/MindMap";
 import { ExamConfig } from "@/components/ExamConfig";
@@ -13,6 +13,29 @@ export function DashboardClient() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isGeneratingExam, setIsGeneratingExam] = useState(false);
   const [examError, setExamError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Odśwież mapę po powrocie z egzaminu (sprawdź czy nie ma już current_exam w localStorage)
+  useEffect(() => {
+    const checkForReturnFromExam = () => {
+      const hasCurrentExam = localStorage.getItem("current_exam");
+      // Jeśli nie ma current_exam, ale byliśmy na stronie egzaminu, odśwież mapę
+      // Używamy sessionStorage do śledzenia czy użytkownik był na egzaminie
+      const wasOnExam = sessionStorage.getItem("was_on_exam");
+      if (!hasCurrentExam && wasOnExam === "true") {
+        sessionStorage.removeItem("was_on_exam");
+        setRefreshKey((prev) => prev + 1);
+      }
+    };
+
+    checkForReturnFromExam();
+    
+    // Sprawdź również przy focus (gdy użytkownik wraca do karty)
+    window.addEventListener("focus", checkForReturnFromExam);
+    return () => {
+      window.removeEventListener("focus", checkForReturnFromExam);
+    };
+  }, []);
 
   const handleNodeClick = useCallback((nodeId: string) => {
     setSelectedNodeId(nodeId);
@@ -36,6 +59,7 @@ export function DashboardClient() {
 
       // Zapisz egzamin do localStorage i przekieruj do widoku egzaminu
       localStorage.setItem("current_exam", JSON.stringify(result.exam));
+      sessionStorage.setItem("was_on_exam", "true");
       router.push("/exam");
     } catch (error) {
       console.error("Błąd podczas generowania egzaminu:", error);
@@ -60,7 +84,7 @@ export function DashboardClient() {
         {/* Mapa myśli - zajmuje 2/3 szerokości na większych ekranach */}
         <div className="lg:col-span-2">
           <div className="h-[calc(100vh-200px)] min-h-[500px]">
-            <MindMap onNodeClick={handleNodeClick} />
+            <MindMap onNodeClick={handleNodeClick} refreshKey={refreshKey} />
           </div>
         </div>
 

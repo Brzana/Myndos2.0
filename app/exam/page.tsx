@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ExamView } from "@/components/ExamView";
 import { ExamSummary } from "@/components/ExamSummary";
 import { submitExamResults } from "@/actions/exam-results";
+import { updateNodeScores } from "@/lib/mindmap/data";
 import type { ExamType } from "@/lib/exam/schemas";
 import type { UserAnswer } from "@/actions/exam-results";
 
@@ -56,6 +57,11 @@ export default function ExamPage() {
         setSubmitError(result.error);
         setIsSubmitting(false);
         return;
+      }
+
+      // Aktualizuj score'y węzłów w localStorage
+      if (result.updatedScores) {
+        updateNodeScores(result.updatedScores);
       }
 
       // Sukces - wyświetl podsumowanie

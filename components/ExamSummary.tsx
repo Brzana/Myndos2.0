@@ -32,7 +32,9 @@ export function ExamSummary({
   ).length;
 
   const handleBackToDashboard = () => {
+    // Odśwież dashboard aby zobaczyć zaktualizowane score'y
     router.push("/dashboard");
+    router.refresh();
   };
 
   // Określ kolor wyniku

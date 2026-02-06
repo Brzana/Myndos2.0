@@ -1559,6 +1559,92 @@ export const nodeIds = initialNodes.map((node) => node.id);
 /** Typ wyników użytkownika: nodeId → score 0–100 lub null (nieodkryty). Używany przy API / utils. */
 export type UserScores = Record<string, number | null>;
 
+// Klucz localStorage dla score'ów węzłów
+const STORAGE_KEY = "mindmap_node_scores";
+
+/**
+ * Sprawdza czy kod działa w przeglądarce (dostępne localStorage)
+ */
+function isBrowser(): boolean {
+  return typeof window !== "undefined" && typeof localStorage !== "undefined";
+}
+
+/**
+ * Pobiera wszystkie score'y z localStorage lub zwraca domyślne z NODE_SCORES
+ */
+export function getNodeScores(): UserScores {
+  if (!isBrowser()) {
+    return NODE_SCORES;
+  }
+
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as UserScores;
+      // Merge z domyślnymi wartościami - localStorage ma priorytet, ale jeśli węzeł nie istnieje, użyj domyślnego
+      return { ...NODE_SCORES, ...parsed };
+    }
+  } catch (error) {
+    console.error("Błąd odczytu score'ów z localStorage:", error);
+  }
+
+  return NODE_SCORES;
+}
+
+/**
+ * Aktualizuje score konkretnego węzła w localStorage
+ * @param nodeId - ID węzła
+ * @param newScore - Nowy score (0-100 lub null)
+ */
+export function updateNodeScore(
+  nodeId: string,
+  newScore: number | null
+): void {
+  if (!isBrowser()) {
+    console.warn("localStorage niedostępne - nie można zaktualizować score");
+    return;
+  }
+
+  try {
+    const currentScores = getNodeScores();
+    currentScores[nodeId] = newScore;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentScores));
+  } catch (error) {
+    console.error("Błąd zapisu score do localStorage:", error);
+  }
+}
+
+/**
+ * Aktualizuje wiele score'ów jednocześnie
+ * @param scores - Obiekt z score'ami do zaktualizowania
+ */
+export function updateNodeScores(scores: Partial<UserScores>): void {
+  if (!isBrowser()) {
+    console.warn("localStorage niedostępne - nie można zaktualizować score");
+    return;
+  }
+
+  try {
+    const currentScores = getNodeScores();
+    Object.assign(currentScores, scores);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(currentScores));
+  } catch (error) {
+    console.error("Błąd zapisu score'ów do localStorage:", error);
+  }
+}
+
+/**
+ * Inicjalizuje score'y z localStorage (używane przy starcie aplikacji)
+ * Zwraca węzły z zaktualizowanymi score'ami
+ */
+export function initializeNodesWithScores(): Node<MindMapNodeData>[] {
+  const scores = getNodeScores();
+  return baseNodes.map((node) => ({
+    ...node,
+    data: { ...node.data, score: scores[node.id] ?? null },
+  }));
+}
+
 // Funkcja pomocnicza do pobierania danych węzła po ID
 export function getNodeById(id: string): Node<MindMapNodeData> | undefined {
   return initialNodes.find((node) => node.id === id);

@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { calculateNodeScore } from "@/lib/exam/utils";
 import type { ExamType } from "@/lib/exam/schemas";
+import type { UserScores } from "@/lib/mindmap/data";
 
 /**
  * Odpowiedź użytkownika na pojedyncze pytanie
@@ -15,19 +16,24 @@ export interface UserAnswer {
 /**
  * Server Action do zapisywania wyników egzaminu i aktualizacji score węzłów.
  * Zgodne z requirements.md (Funkcja 5):
- * - Zapisuje historię egzaminu (exam_attempts, exam_answers)
- * - Aktualizuje wyniki węzłów zgodnie z logiką +20/-10
+ * - Zapisuje historię egzaminu (exam_attempts, exam_answers) do Supabase
+ * - Oblicza nowe score'y węzłów zgodnie z logiką +20/-10 (do aktualizacji lokalnie)
  * - Clampuje wyniki w przedziale [0, 100]
  *
  * @param exam - Wygenerowany egzamin (zawiera pytania z correctAnswer)
  * @param userAnswers - Odpowiedzi użytkownika na pytania
- * @returns Wynik operacji (success/error)
+ * @returns Wynik operacji (success/error) + zaktualizowane score'y węzłów
  */
 export async function submitExamResults(
   exam: ExamType,
   userAnswers: UserAnswer[]
 ): Promise<
-  | { success: true; examAttemptId: string; totalScore: number }
+  | {
+      success: true;
+      examAttemptId: string;
+      totalScore: number;
+      updatedScores: UserScores;
+    }
   | { success: false; error: string }
 > {
   try {
@@ -117,10 +123,10 @@ export async function submitExamResults(
 
     if (answersError) {
       console.error("Błąd zapisu exam_answers:", answersError);
-      // Nie przerywamy - próbujemy zaktualizować score węzłów mimo błędu
+      // Nie przerywamy - kontynuujemy z obliczaniem score'ów
     }
 
-    // 7. Aktualizuj score węzłów zgodnie z logiką +20/-10
+    // 7. Oblicz nowe score'y węzłów zgodnie z logiką +20/-10
     // Grupuj odpowiedzi według nodeId (jeden węzeł może mieć wiele pytań)
     const nodeScoreUpdates = new Map<string, { correct: number; incorrect: number }>();
 
@@ -141,21 +147,20 @@ export async function submitExamResults(
       nodeScoreUpdates.set(result.nodeId, current);
     });
 
-    // 8. Dla każdego węzła: pobierz aktualny score i zaktualizuj
+    // 8. Oblicz zaktualizowane score'y dla każdego węzła
+    // Uwaga: W Server Action nie mamy dostępu do localStorage, więc zwracamy tylko obliczone wartości
+    // Aktualizacja localStorage nastąpi w komponencie klienckim
+    const updatedScores: UserScores = {};
+
+    // Pobierz aktualne score'y z Supabase (dla kompatybilności wstecznej)
+    // Jeśli nie ma w Supabase, użyjemy 0 jako domyślnej wartości
     for (const [nodeId, counts] of nodeScoreUpdates.entries()) {
-      // Pobierz aktualny score węzła
-      const { data: currentScoreData, error: fetchError } = await supabase
+      const { data: currentScoreData } = await supabase
         .from("user_node_scores")
         .select("score")
         .eq("user_id", user.id)
         .eq("node_id", nodeId)
         .maybeSingle();
-
-      if (fetchError && fetchError.code !== "PGRST116") {
-        // PGRST116 = brak rekordu (to OK, użyjemy null)
-        console.error(`Błąd pobierania score dla węzła ${nodeId}:`, fetchError);
-        continue;
-      }
 
       const currentScore: number | null = currentScoreData?.score ?? null;
 
@@ -168,30 +173,14 @@ export async function submitExamResults(
       // Clamp do [0, 100]
       newScore = Math.max(0, Math.min(100, newScore));
 
-      // Zapisz lub zaktualizuj score węzła
-      const { error: updateError } = await supabase
-        .from("user_node_scores")
-        .upsert(
-          {
-            user_id: user.id,
-            node_id: nodeId,
-            score: newScore,
-          },
-          {
-            onConflict: "user_id,node_id",
-          }
-        );
-
-      if (updateError) {
-        console.error(`Błąd aktualizacji score dla węzła ${nodeId}:`, updateError);
-        // Nie przerywamy - kontynuujemy dla innych węzłów
-      }
+      updatedScores[nodeId] = newScore;
     }
 
     return {
       success: true,
       examAttemptId: examAttempt.id,
       totalScore: totalScorePercentage,
+      updatedScores,
     };
   } catch (error) {
     console.error("Błąd zapisywania wyników egzaminu:", error);

@@ -2,7 +2,7 @@
 
 //TODO: refactor it so it works with the data that ill provide (like it is used in knowledgemaps.ua)
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -19,6 +19,7 @@ import "reactflow/dist/style.css";
 import {
   initialNodes,
   initialEdges,
+  initializeNodesWithScores,
   type MindMapNodeData,
 } from "@/lib/mindmap/data";
 import { getNodeColor } from "@/lib/mindmap/utils";
@@ -26,6 +27,7 @@ import { MindMapNode } from "./MindMapNode";
 
 interface MindMapProps {
   onNodeClick?: (nodeId: string) => void;
+  refreshKey?: number; // Zmiana tego prop wymusi odświeżenie score'ów
 }
 
 // Rejestracja custom node types
@@ -33,9 +35,30 @@ const nodeTypes: NodeTypes = {
   mindMapNode: MindMapNode,
 };
 
-export function MindMap({ onNodeClick }: MindMapProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+export function MindMap({ onNodeClick, refreshKey }: MindMapProps) {
+  // Inicjalizuj węzły z score'ami z localStorage
+  const [initialNodesWithScores] = useState(() => initializeNodesWithScores());
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodesWithScores);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  // Aktualizuj score'y węzłów gdy zmieni się refreshKey lub localStorage
+  useEffect(() => {
+    const updatedNodes = initializeNodesWithScores();
+    setNodes(updatedNodes);
+  }, [refreshKey, setNodes]);
+
+  // Nasłuchuj zmian w localStorage między kartami/oknami
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const updatedNodes = initializeNodesWithScores();
+      setNodes(updatedNodes);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [setNodes]);
 
   // Handler kliknięcia w węzeł
   const handleNodeClick = useCallback(
